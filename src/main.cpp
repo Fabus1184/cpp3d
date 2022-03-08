@@ -14,7 +14,11 @@ using namespace std;
 
 void loop(SDL_Renderer* renderer, SDL_Window* window){
 	SDL_Event *event;
-	while(true) if (SDL_PollEvent(event) && event->type == SDL_QUIT) break;
+	while(true){
+		if (SDL_PollEvent(event)){
+			if(event->type == SDL_QUIT) break;
+		}
+	}
   	SDL_DestroyRenderer(renderer);
   	SDL_DestroyWindow(window);
 	SDL_Quit();
@@ -88,7 +92,7 @@ int main(){
 
 		if (fmod(round((dur - floor(dur)) * 100.0) / 10, 2) == 0) fps = to_string((int) round(1 / dt));
 		
-		SDL_Surface* surface = TTF_RenderText_Blended(font, fps.c_str(), {0, 255, 0});
+		SDL_Surface* surface = TTF_RenderText_Blended(font, fps.c_str(), {0, 255, 0, 0});
 	
 		if (surface == nullptr) {
 			cout << "Error: SDL_Surface TTF_RenderText_Blended" << endl;
