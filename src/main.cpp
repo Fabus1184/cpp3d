@@ -12,36 +12,13 @@
 
 using namespace std;
 
-void loop(SDL_Renderer* renderer, SDL_Window* window){
-	SDL_Event *event;
-	while(true){
-		if (SDL_PollEvent(event)){
-			if(event->type == SDL_QUIT) break;
-		}
-	}
-  	SDL_DestroyRenderer(renderer);
-  	SDL_DestroyWindow(window);
-	SDL_Quit();
-	exit(0);
-}
-
 int main(){
-	if(SDL_Init(SDL_INIT_VIDEO) != 0 || TTF_Init() != 0){
-        cout << "Failed to initialize the SDL2 library" << endl;
-        return 1;
-    }
+	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_TIMER);
+	SDL_Init(SDL_INIT_EVENTS);
 
     SDL_Window* window = SDL_CreateWindow("Fetz Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_WIDTH, 0);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
-
-	TTF_Font* font = TTF_OpenFont("res/Chalkboard.ttf", 20);
-
-	if (font == nullptr){
-		cout << "ERROR: font not found" << endl;
-		exit(1);
-	}
-
-	thread thread(loop, renderer, window);
 
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 	SDL_RenderClear(renderer);
@@ -76,7 +53,15 @@ int main(){
 	string fps = "0";
 
 	while(true){
+		SDL_Event event;
+		if (SDL_PollEvent(&event)) {
+			if (event.type == SDL_QUIT) break;
+		}
+			
+
 		SDL_Delay(5);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+		SDL_RenderClear(renderer);
 
 		auto newtime = chrono::steady_clock::now();
 		double dt = chrono::duration<double>(newtime - time).count(); // [s]
@@ -92,35 +77,7 @@ int main(){
 
 		if (fmod(round((dur - floor(dur)) * 100.0) / 10, 2) == 0) fps = to_string((int) round(1 / dt));
 		
-		SDL_Surface* surface = TTF_RenderText_Blended(font, fps.c_str(), {0, 255, 0, 0});
-	
-		if (surface == nullptr) {
-			cout << "Error: SDL_Surface TTF_RenderText_Blended" << endl;
-			exit(1);
-		}
-
-		SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
-
-		if (surface == nullptr) {
-			cout << "Error: SDL_Texture SDL_CreateTextureFromSurface" << endl;
-			exit(1);
-		}
-
-		SDL_FreeSurface(surface);
-				
-		SDL_Rect rect;
-		rect.x = 0;
-		rect.y = 0;
-		
-		SDL_QueryTexture(message, NULL, NULL, &rect.w, &rect.h);
-
-		SDL_RenderCopy(renderer, message, NULL, &rect);
-		SDL_DestroyTexture(message);
-		
 		SDL_RenderPresent(renderer);
-    	
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-		SDL_RenderClear(renderer);
 	}
 
   	SDL_DestroyRenderer(renderer);
