@@ -1,0 +1,5 @@
+*.o
+main
+profile.png
+.idea/**
+cmake-build-debug/**
