@@ -6,7 +6,39 @@ using namespace std;
 
 void init()
 {
-	cl_test();
+	cl_init();
+	srand((unsigned int) time(nullptr));
+	int num = 250000000;
+
+	auto *a = reinterpret_cast<float *>(malloc(num * sizeof(float)));
+	auto *b = reinterpret_cast<float *>(malloc(num * sizeof(float)));
+	auto *cl_res = reinterpret_cast<float *>(malloc(num * sizeof(float)));
+	auto *cpu_res = reinterpret_cast<float *>(malloc(num * sizeof(float)));
+
+	cout << "allocating " << sizeof(float) * (float) num * ((float) 3 / pow(10, 6)) << "MB" << endl;
+
+	for (int i = 0; i < num; i++) a[num] = b[num] = (float(rand()) / float((RAND_MAX)) * 10);
+
+	cout << endl;
+	cl_vadd(a, b, cl_res, num);
+
+	unsigned long cl_hash = boost::hash_range(cl_res, cl_res + num);
+	cout << " - CL Hash: " << cl_hash << " at " << cl_res << endl;
+	free(cl_res);
+
+	auto start = chrono::steady_clock::now();
+	for (int i = 0; i < num; i ++) cpu_res[num] = atan2(sin(a[num]) / cos(a[num]), erf(b[num]) * tanh(b[num]));
+	auto end = chrono::steady_clock::now();
+
+	cout << endl;
+	cout << " - CPU took " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms " << endl;
+	unsigned long cpu_hash = boost::hash_range(cpu_res, cpu_res + num);
+	cout << " - CPU Hash: " << cpu_hash << " at " << cpu_res << endl;
+
+	cout << endl;
+	if(cpu_hash == cl_hash) cout << "HASH MATCH!" << endl;
+	else cerr << "WRONG HASH!" << endl;
+
 	_exit(0);
 
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO);

@@ -8,10 +8,10 @@ find_package(SDL2 REQUIRED)
 find_package(OpenCL REQUIRED)
 find_package(Threads REQUIRED)
 
-file(GLOB SOURCES src/*)
+file(GLOB SOURCES src/*.cpp)
 add_executable(cpp3d ${SOURCES})
+add_compile_options(cpp3d "-O3")
 
 target_link_libraries(cpp3d ${SDL2_LIBRARIES})
 target_link_libraries(cpp3d ${OpenCL_LIBRARIES})
 target_link_libraries(cpp3d ${CMAKE_THREAD_LIBS_INIT})
-

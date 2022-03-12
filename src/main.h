@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <chrono>
 #include <iostream>
+#include <boost/functional/hash.hpp>
 
 #include "OpenCL.h"
 #include "Cube.h"

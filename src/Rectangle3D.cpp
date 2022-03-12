@@ -43,7 +43,6 @@ Rectangle3D::Rectangle3D() = default;
 
 [[maybe_unused]] void Rectangle3D::draw(SDL_mutex *mutex, SDL_Renderer *renderer, Texture *texture) const
 {
-
 	if (texture == nullptr) {
 		/* draw normals
 		Vector3D mid = (this->a + this->c) / 2;
