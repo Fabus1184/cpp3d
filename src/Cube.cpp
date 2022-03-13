@@ -72,22 +72,8 @@ Cube::Cube(Vector3D lower_left_front, float width)
 	};
 }
 
-void Cube::draw(SDL_mutex *mutex, SDL_Renderer *r, Texture **texture) const
+[[maybe_unused]] void Cube::draw(SDL_mutex *mutex, SDL_Renderer *r, Texture **texture) const
 {
-	/*thread at([this, r, texture, mutex]() { a.draw(mutex, r, texture[0]); });
-	thread bt([this, r, texture, mutex]() { b.draw(mutex, r, texture[1]); });
-	thread ct([this, r, texture, mutex]() { c.draw(mutex, r, texture[2]); });
-	thread dt([this, r, texture, mutex]() { d.draw(mutex, r, texture[3]); });
-	thread et([this, r, texture, mutex]() { e.draw(mutex, r, texture[4]); });
-	thread ft([this, r, texture, mutex]() { f.draw(mutex, r, texture[5]); });
-
-	at.join();
-	bt.join();
-	ct.join();
-	dt.join();
-	et.join();
-	ft.join();*/
-
 	a.draw(mutex, r, texture[0]);
 	b.draw(mutex, r, texture[1]);
 	c.draw(mutex, r, texture[2]);
@@ -95,4 +81,28 @@ void Cube::draw(SDL_mutex *mutex, SDL_Renderer *r, Texture **texture) const
 	e.draw(mutex, r, texture[4]);
 	f.draw(mutex, r, texture[5]);
 
+}
+
+void Cube::cl_draw(SDL_mutex *mutex, SDL_Renderer *r, Texture *texture) const
+{
+	/*future<void> at = async(launch::async, [this, mutex, r, texture]() { this->a.cl_draw(mutex, r, texture[0]); });
+	future<void> bt = async(launch::async, [this, mutex, r, texture]() { this->b.cl_draw(mutex, r, texture[1]); });
+	future<void> ct = async(launch::async, [this, mutex, r, texture]() { this->c.cl_draw(mutex, r, texture[2]); });
+	future<void> dt = async(launch::async, [this, mutex, r, texture]() { this->d.cl_draw(mutex, r, texture[3]); });
+	future<void> et = async(launch::async, [this, mutex, r, texture]() { this->e.cl_draw(mutex, r, texture[4]); });
+	future<void> ft = async(launch::async, [this, mutex, r, texture]() { this->f.cl_draw(mutex, r, texture[5]); });
+
+	at.get();
+	bt.get();
+	ct.get();
+	dt.get();
+	et.get();
+	ft.get();*/
+
+	a.cl_draw(mutex, r, texture[0]);
+	b.cl_draw(mutex, r, texture[1]);
+	c.cl_draw(mutex, r, texture[2]);
+	d.cl_draw(mutex, r, texture[3]);
+	e.cl_draw(mutex, r, texture[4]);
+	f.cl_draw(mutex, r, texture[5]);
 }

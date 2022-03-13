@@ -7,6 +7,7 @@ using namespace std;
 void init()
 {
 	cl_init();
+	/*
 	srand((unsigned int) time(nullptr));
 	int num = 250000000;
 
@@ -40,7 +41,7 @@ void init()
 	else cerr << "WRONG HASH!" << endl;
 
 	_exit(0);
-
+	*/
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO);
 
 	SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "opengl");
@@ -89,11 +90,11 @@ int main()
 		   (float) width);
 
 	Texture t;
-	t.loadDiff("res/diffuse.png");
+	t.loadDiff("../res/diffuse.png");
 	t = t.scaled(200, 200);
 
-	Texture *atlas[] = {
-		&t, &t, &t, &t, &t, &t
+	Texture atlas[] = {
+		t, t, t, t, t, t
 	};
 
 	auto start = chrono::steady_clock::now();
@@ -101,7 +102,7 @@ int main()
 	float rx = 0.5;        // [rad / s]
 	float rot = 0;        // [rad]
 
-	while (rot <= M_PI) {
+	while (rot <= M_PI * 2) {
 		SDL_Delay(5);
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 		SDL_RenderClear(renderer);
@@ -117,7 +118,8 @@ int main()
 
 		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 0);
 
-		c.rotate(rot, rot, rot, Vector3D((float) WINDOW_WIDTH / 2, (float) WINDOW_WIDTH / 2, (float) WINDOW_WIDTH / 2)).draw(render_mutex, renderer, atlas);
+		c.rotate(rot, rot, rot, Vector3D((float) WINDOW_WIDTH / 2, (float) WINDOW_WIDTH / 2, (float) WINDOW_WIDTH / 2))
+			.cl_draw(render_mutex, renderer, atlas);
 
 		SDL_RenderPresent(renderer);
 	}

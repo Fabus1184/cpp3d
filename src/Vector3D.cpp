@@ -101,7 +101,7 @@ Vector3D Vector3D::operator/(const float &fac) const
 
 [[maybe_unused]] [[nodiscard]] Vector3D Vector3D::unit() const
 {
-	return *this / this->length();
+	return *this * fast_inv_sqrt(this->x * this->x + this->y * this->y + this->z * this->z);
 }
 
 ostream &operator<<(ostream &ss, const Vector3D &v)

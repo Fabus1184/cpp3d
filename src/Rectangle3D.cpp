@@ -1,10 +1,6 @@
 #include "Rectangle3D.h"
 
-#include <cmath>
-#include <SDL2/SDL.h>
-
-#include "Vector3D.h"
-#include "Texture.h"
+using namespace std;
 
 Rectangle3D::Rectangle3D() = default;
 
@@ -20,7 +16,7 @@ Rectangle3D::Rectangle3D() = default;
 {
 	SDL_LockMutex(mutex);
 	SDL_SetRenderDrawColor(renderer, 255, 0, 255, 0);
-	SDL_RenderDrawLines(renderer, new const SDL_Point[]{
+	SDL_RenderDrawLines(renderer, new const SDL_Point[8]{
 		{(int) round(a.x), (int) round(a.y)},
 		{(int) round(b.x), (int) round(b.y)},
 
@@ -39,6 +35,45 @@ Rectangle3D::Rectangle3D() = default;
 [[maybe_unused]] [[nodiscard]] Vector3D Rectangle3D::normal() const
 {
 	return (this->d - this->a).cross(this->b - this->a).unit();
+}
+
+[[maybe_unused]] void Rectangle3D::cl_draw(SDL_mutex *mutex, SDL_Renderer *renderer, Texture texture) const
+{
+	if (this->normal().angle(Vector3D(0, 0, 1)) <= M_PI_2) return;
+
+	Vector3D xu = (this->b - this->a).unit();
+	Vector3D yu = (this->d - this->a).unit();
+
+	float maxx = (this->b - this->a).length();
+	float maxy = (this->d - this->a).length();
+
+	if ((int) round(maxx) != texture.width || (int) round(maxy) != texture.height) {
+		texture = texture.scaled((int) round(maxx), (int) round(maxy));
+	}
+
+	int width = (int) round(maxx);
+	int height = (int) round(maxy);
+	unsigned long size = width * height * sizeof(int) * 2;
+
+	int *trans = reinterpret_cast<int *>(malloc(size));
+
+	auto get = [](int *trans, int width, int x, int y) -> int * {
+		return &trans[(y * width * 2) + x * 2];
+	};
+
+	cl_transform(width, height, a, xu, yu, trans);
+
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			int *k = get(trans, width, x, y);
+			SDL_Color col = texture.getDiffuse(x, y);
+			SDL_LockMutex(mutex);
+			SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, 0);
+			SDL_RenderDrawPoint(renderer, k[0], k[1]);
+			SDL_UnlockMutex(mutex);
+		}
+	}
+	free(trans);
 }
 
 [[maybe_unused]] void Rectangle3D::draw(SDL_mutex *mutex, SDL_Renderer *renderer, Texture *texture) const
@@ -77,6 +112,7 @@ Rectangle3D::Rectangle3D() = default;
 	}
 	SDL_UnlockMutex(mutex);
 }
+
 
 [[maybe_unused]] [[nodiscard]] Rectangle3D Rectangle3D::rotate(float x, float y, float z)
 {

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#include <thread>
+#include <future>
 
 #include "Rectangle3D.h"
 #include "Texture.h"
@@ -20,5 +22,8 @@ public:
 
 	[[nodiscard]] Cube rotate(float x, float y, float z, Vector3D pivot) const;
 
-	void draw(SDL_mutex *mutex, SDL_Renderer *r, Texture **texture = nullptr) const;
+	[[maybe_unused]] void draw(SDL_mutex *mutex, SDL_Renderer *r, Texture **texture = nullptr) const;
+
+	void cl_draw(SDL_mutex *mutex, SDL_Renderer *r, Texture *texture) const;
+
 };

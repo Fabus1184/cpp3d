@@ -11,29 +11,26 @@ Program *prog = static_cast<Program *>(malloc(sizeof(Program)));
 cl_uint compute_units;
 
 const char *kernel_src =
-	"__kernel void v3_x_v3(const __global float *a, const __global float *b, __global float *out){"
-	"	int index = get_global_id(0);"
-	"	if(index < 3){"
-	" 		out[index] = (a[index] * b[index]);"
-	"	}"
-	"}"
 	"__kernel void vadd(const __global float *a, const __global float *b, __global float *out, __global const int *length){"
 	"	int index = get_global_id(0);"
 	"	if(index < *length){"
 	"		for(int i=0; i<250; i++) out[index + i] = atan2(sin(a[index + i]) / cos(a[index + i]), tan(b[index + i]) * tanh(b[index+i]));"
 	"	}"
 	"}"
-	"__kernel void v3_x_float(const float *a, const float *b, __global float *out){"
-	"	int index = get_global_id(0);"
-	"	if(index < 3){"
-	"		out[index] = a[index] * *b;"
-	"	}"
+	""
+	"int *get(int *trans, int width, int x, int y){"
+	"	return &trans[(y * width * 2) + x * 2];"
 	"}"
-	"__kernel void v3_p_v3(const float *a, const float *b, float *out){"
-	"	int index = get_global_id(0);"
-	"	if(index < 3){"
-	"		out[index] = a[index] + b[index];"
-	"	}"
+	""
+	"__kernel void transform(const __global int *width, const __global int *height,"
+	"const __global float *a, const __global float *xu, const __global float *yu,"
+	"__global int *out){"
+	"	const int x = get_global_id(0);"
+	" 	const int y = get_global_id(1);"
+	"	if(x >= *width || y >= *height) return;"
+	"	int* k = get(out, *width, x, y);"
+	"	*k = (int) round(a[0] + (xu[0] * x) + (yu[0] * y));"
+	"	*(k+1) = (int) round(a[1] + (xu[1] * x) + (yu[1] * y));"
 	"}";
 
 void cl_init()
@@ -85,7 +82,7 @@ void cl_init()
 		cout << "Kernel compiled successfully" << endl;
 }
 
-float cl_v3_x_v3(const Vector3D a, const Vector3D b)
+[[maybe_unused]] float cl_v3_x_v3(const Vector3D a, const Vector3D b)
 {
 	Kernel kernel(*prog, "v3_x_v3");
 	float res[] = {0, 0, 0};
@@ -130,4 +127,27 @@ void cl_vadd(float *a, float *b, float *res, int length)
 	cout << " - OpenCL took " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms " << endl;
 
 	queue->enqueueReadBuffer(resbuf, CL_TRUE, 0, sizeof(float) * length, res);
+}
+
+void cl_transform(int width, int height, Vector3D a, Vector3D xu, Vector3D yu, int *out)
+{
+	Kernel kernel(*prog, "transform");
+
+	Buffer width_buf(*ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &width);
+	Buffer height_buf(*ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &height);
+	Buffer a_buf(*ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(float) * 2, &a);
+	Buffer xu_buf(*ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(float) * 2, &xu);
+	Buffer yu_buf(*ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(float) * 2, &yu);
+	Buffer out_buf(*ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, width * height * sizeof(int) * 2, out);
+
+	kernel.setArg(0, width_buf);
+	kernel.setArg(1, height_buf);
+	kernel.setArg(2, a_buf);
+	kernel.setArg(3, xu_buf);
+	kernel.setArg(4, yu_buf);
+	kernel.setArg(5, out_buf);
+
+	queue->enqueueNDRangeKernel(kernel, NDRange(), NDRange(width, height), NDRange());
+	queue->finish();
+	queue->enqueueReadBuffer(out_buf, CL_TRUE, 0, width * height * sizeof(int) * 2, out);
 }

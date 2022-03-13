@@ -2,9 +2,11 @@
 
 #include <cmath>
 #include <SDL2/SDL.h>
+#include <vector>
 
-#include "Texture.h"
 #include "Vector3D.h"
+#include "Texture.h"
+#include "OpenCL.h"
 
 class Rectangle3D
 {
@@ -19,6 +21,8 @@ public:
 	[[maybe_unused]] void draw(SDL_mutex *mutex, SDL_Renderer *renderer) const;
 
 	[[maybe_unused]] [[nodiscard]] Vector3D normal() const;
+
+	[[maybe_unused]] void cl_draw(SDL_mutex *mutex, SDL_Renderer *renderer, Texture texture) const;
 
 	[[maybe_unused]] void draw(SDL_mutex *mutex, SDL_Renderer *renderer, Texture *texture) const;
 

@@ -3,6 +3,8 @@
 #include <cmath>
 #include <sstream>
 
+#include "Misc.h"
+
 class Vector3D
 {
 public:

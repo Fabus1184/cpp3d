@@ -9,8 +9,10 @@ find_package(OpenCL REQUIRED)
 find_package(Threads REQUIRED)
 
 file(GLOB SOURCES src/*.cpp)
-add_executable(cpp3d ${SOURCES})
-add_compile_options(cpp3d "-O3")
+add_executable(cpp3d ${SOURCES} ${INCLUDE})
+add_compile_options(cpp3d "-g -pg")
+
+include_directories(BEFORE include)
 
 target_link_libraries(cpp3d ${SDL2_LIBRARIES})
 target_link_libraries(cpp3d ${OpenCL_LIBRARIES})
